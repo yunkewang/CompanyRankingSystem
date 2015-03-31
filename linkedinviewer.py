@@ -40,11 +40,15 @@ class Linkedinviewer (object):
 		profile = self.application.get_profile()
 		print profile
 
+		return profile
+
 	def get_company(self, company_id=None, universal_names=[]):
 
 		# Get company information
 		companies = self.application.get_companies(company_id, universal_names)
 		print companies
+
+		return companies
 
 	def get_company_updates(self, company_id=None, count=1):
 
@@ -52,8 +56,15 @@ class Linkedinviewer (object):
 		company_updates = self.application.get_company_updates(company_id, params={'count': count})
 		print company_updates
 
+		return company_updates
+
 if __name__ == "__main__":
 	lviewer = Linkedinviewer('linkedincred.conf')
 	lviewer.authenticate()
 	lviewer.get_profile()
-	lviewer.get_company(universal_names=['splunk'])
+	companies = lviewer.get_company(universal_names=['splunk'])
+	company_list = []
+	for i in range(companies['_total']):
+		company_list.append(companies['values'][i])
+	for company in company_list:
+		lviewer.get_company_updates(company_id=company['id'], count=5)
