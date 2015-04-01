@@ -35,7 +35,7 @@ class Linkedinviewer (object):
 
 		return None
 
-	def get_profile(self):
+	def retrieve_profile(self):
 		
 		# Get profile information
 		profile = self.application.get_profile()
@@ -43,15 +43,44 @@ class Linkedinviewer (object):
 
 		return profile
 
-	def get_company(self, company_id=None, universal_names=None):
+	def retrieve_company(self, company_ids=None, universal_names=None):
 
 		# Get company information
-		companies = self.application.get_companies(company_id, universal_names)
+		companies = None
+		count = 0
+		
+		if company_ids is not None:
+			for company_id in company_ids:
+				try:
+					company_temp = self.application.get_companies(company_ids=[company_id])
+					if companies is None:
+						companies = {}
+						companies['values'] = []
+					companies['values'].append(company_temp['values'][0])
+					count = count + 1
+				except:
+					print "Unable to retrieve company id:", company_id
+
+		if universal_names is not None:
+			for universal_name in universal_names:
+				try:
+					company_temp = self.application.get_companies(universal_names=[universal_name])
+					if companies is None:
+						companies = {}
+						companies['values'] = []
+					companies['values'].append(company_temp['values'][0])
+					count = count + 1
+				except:
+					print "Unable to retrieve universal name:", universal_name
+
+		if count > 0:
+			companies['_total'] = count
+		
 		print companies
 
 		return companies
 
-	def get_company_updates(self, companies=None, count=1):
+	def retrieve_company_updates(self, companies=None, count=1):
 
 		# Get company updates
 		company_list = None
@@ -79,6 +108,6 @@ class Linkedinviewer (object):
 if __name__ == "__main__":
 	lviewer = Linkedinviewer('linkedincred.conf')
 	lviewer.authenticate()
-	lviewer.get_profile()
-	companies = lviewer.get_company(universal_names=['apple', 'splunk'])
-	company_updates_dict = lviewer.get_company_updates(companies=companies, count=3)
+	lviewer.retrieve_profile()
+	companies = lviewer.retrieve_company(universal_names=['apple', 'splunk'])
+	company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
