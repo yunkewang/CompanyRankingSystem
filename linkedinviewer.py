@@ -24,8 +24,6 @@ class Linkedinviewer (object):
 					cred_list = []
 				cred_list.append(cred_temp.strip(' \t\n\r'))
 
-		# Authenticating with LinkedIn
-
 		try:
 			self.authentication = linkedin.LinkedInDeveloperAuthentication(cred_list[0], cred_list[1], cred_list[2],
 														cred_list[3], cred_list[4], linkedin.PERMISSIONS.enums.values())
@@ -43,7 +41,7 @@ class Linkedinviewer (object):
 
 		return profile
 
-	def retrieve_company(self, company_ids=None, universal_names=None):
+	def retrieve_company(self, company_ids=None, universal_names=None, selectors=None):
 
 		# Get company information
 		companies = None
@@ -52,7 +50,7 @@ class Linkedinviewer (object):
 		if company_ids is not None:
 			for company_id in company_ids:
 				try:
-					company_temp = self.application.get_companies(company_ids=[company_id])
+					company_temp = self.application.get_companies(company_ids=[company_id], selectors=selectors)
 					if companies is None:
 						companies = {}
 						companies['values'] = []
@@ -64,7 +62,7 @@ class Linkedinviewer (object):
 		if universal_names is not None:
 			for universal_name in universal_names:
 				try:
-					company_temp = self.application.get_companies(universal_names=[universal_name])
+					company_temp = self.application.get_companies(universal_names=[universal_name], selectors=selectors)
 					if companies is None:
 						companies = {}
 						companies['values'] = []
@@ -76,7 +74,10 @@ class Linkedinviewer (object):
 		if count > 0:
 			companies['_total'] = count
 		
-		print companies
+		for company in companies['values']:
+			print '========================\n'
+			print company
+			print '\n========================'
 
 		return companies
 
@@ -86,7 +87,6 @@ class Linkedinviewer (object):
 		company_list = None
 		company_updates_dict = None
 		
-		print 'test'
 		if companies is not None:
 			for i in range(companies['_total']):
 				if company_list is None:
@@ -109,5 +109,9 @@ if __name__ == "__main__":
 	lviewer = Linkedinviewer('linkedincred.conf')
 	lviewer.authenticate()
 	lviewer.retrieve_profile()
-	companies = lviewer.retrieve_company(universal_names=['apple', 'splunk'])
+	selectors = ['id', 'name', 'company-type', 'stock-exchange', 
+				 'ticker', 'industries', 'employee-count-range',
+				 'locations', 'founded-year', 'num-followers'
+				]
+	companies = lviewer.retrieve_company(universal_names=['sciencelogic', 'splunk'], selectors=selectors)
 	company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
