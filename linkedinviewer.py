@@ -115,3 +115,4 @@ if __name__ == "__main__":
                 ]
     companies = lviewer.retrieve_company(universal_names=['sciencelogic', 'splunk'], selectors=selectors)
     company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
+    
