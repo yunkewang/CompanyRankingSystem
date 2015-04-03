@@ -1,5 +1,4 @@
 import getpass
-import base64
 import pickle
 from Crypto.Cipher import AES
 from Crypto import Random
