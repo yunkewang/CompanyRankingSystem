@@ -16,7 +16,6 @@ class Credhandler(object):
     def generate(self):
         
         # Generate AES encrypted pickle with input
-        
         cred_filename = raw_input('Input the local API credential filename here:')
         cred_list = None
         
@@ -74,6 +73,6 @@ class Credhandler(object):
 
 
 if __name__ == "__main__":
-    keygen = Credhandler()
-    keygen.generate()
-    keygen.load()
+    ch = Credhandler()
+    ch.generate()
+    ch.load()
