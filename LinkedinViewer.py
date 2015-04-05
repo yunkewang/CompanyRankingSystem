@@ -1,7 +1,6 @@
 from linkedin import linkedin
 import sys
 import CredHandler
-import oauthlib
 
 class Linkedinviewer (object):
 
@@ -25,7 +24,7 @@ class Linkedinviewer (object):
                 self.authentication = linkedin.LinkedInDeveloperAuthentication(cred_list[0], cred_list[1], 
                                                                                cred_list[2], cred_list[3], 
                                                                                cred_list[4], linkedin.PERMISSIONS.enums.values())
-                self.application = application = linkedin.LinkedInApplication(self.authentication)
+                self.application = linkedin.LinkedInApplication(self.authentication)
             except:
                 print "Failed to authenticate with LinkedIn"
                 sys.exit()
