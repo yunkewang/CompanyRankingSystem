@@ -12,6 +12,9 @@ pycrypto:
 	
 	https://pypi.python.org/pypi/pycrypto
 
+pycrunchbase:
+
+	https://github.com/ngzhian/pycrunchbase
 
 ## API credential management:
 
