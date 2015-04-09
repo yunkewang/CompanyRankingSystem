@@ -1,5 +1,4 @@
 from linkedin import linkedin
-from Tkinter import *
 import sys
 import CredHandler
 
