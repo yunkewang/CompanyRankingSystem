@@ -69,10 +69,16 @@ class Linkedinviewer (object):
         return None
 
 
-    def retrieve_profile(self):
+    def retrieve_profile(self, member_id=None, selectors=None):
         
         # Get profile information
-        profile = self.application.get_profile()
+        profile = None
+
+        if member_id is not None:
+            profile = self.application.get_profile(member_id=member_id, selectors=selectors)
+        else:
+            profile = self.application.get_profile(selectors=selectors)
+        
         print profile
 
         return profile
@@ -149,12 +155,16 @@ class Linkedinviewer (object):
 
 
 if __name__ == "__main__":
+    profile_selectors = ['id', 'location', 'first-name', 
+                         'last-name', 'industry', 'positions', 
+                         'specialties', 'summary'
+                        ]
+    company_selectors = ['id', 'name', 'company-type', 'stock-exchange', 
+                         'ticker', 'industries', 'employee-count-range',
+                         'locations', 'founded-year', 'num-followers'
+                        ]
     lviewer = Linkedinviewer()
     lviewer.authenticate()
-    # lviewer.retrieve_profile()
-    selectors = ['id', 'name', 'company-type', 'stock-exchange', 
-                 'ticker', 'industries', 'employee-count-range',
-                 'locations', 'founded-year', 'num-followers'
-                ]
-    companies = lviewer.retrieve_company(universal_names=['1010data', 'apple'], selectors=selectors)
+    # lviewer.retrieve_profile(selectors=profile_selectors)
+    companies = lviewer.retrieve_company(universal_names=['1010data', 'apple'], selectors=company_selectors)
     company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
