@@ -1,4 +1,5 @@
 from linkedin import linkedin
+from Tkinter import *
 import sys
 import CredHandler
 
@@ -82,6 +83,7 @@ class Linkedinviewer (object):
 
         # Get company information
         companies = None
+        company_temp = None
         count = 0
         
         if company_ids is not None:
@@ -126,20 +128,23 @@ class Linkedinviewer (object):
         company_updates_dict = None
         
         if companies is not None:
-            for i in range(companies['_total']):
-                if company_list is None:
-                    company_list = []
-                company_list.append(companies['values'][i])
-            for company in company_list:
-                if company_updates_dict is None:
-                    company_updates_dict = {}
-                company_updates_dict[company['name']] = self.application.get_company_updates(company['id'], params={'count': count})
-            for company_name, company_updates in company_updates_dict.iteritems():
-                print '\n************************', company_name, '************************\n'
-                for i in range(company_updates['_count']):
-                    print '========================\n'
-                    print company_updates['values'][i]
-                    print '\n========================'
+            try:
+                for i in range(companies['_total']):
+                    if company_list is None:
+                        company_list = []
+                    company_list.append(companies['values'][i])
+                for company in company_list:
+                    if company_updates_dict is None:
+                        company_updates_dict = {}
+                    company_updates_dict[company['name']] = self.application.get_company_updates(company['id'], params={'count': count})
+                for company_name, company_updates in company_updates_dict.iteritems():
+                    print '\n************************', company_name, '************************\n'
+                    for i in range(company_updates['_count']):
+                        print '========================\n'
+                        print company_updates['values'][i]
+                        print '\n========================'
+            except:
+                print 'Unable to retrieve company updates'
 
         return company_updates_dict
 
@@ -147,10 +152,10 @@ class Linkedinviewer (object):
 if __name__ == "__main__":
     lviewer = Linkedinviewer()
     lviewer.authenticate()
-    lviewer.retrieve_profile()
+    # lviewer.retrieve_profile()
     selectors = ['id', 'name', 'company-type', 'stock-exchange', 
                  'ticker', 'industries', 'employee-count-range',
                  'locations', 'founded-year', 'num-followers'
                 ]
-    companies = lviewer.retrieve_company(universal_names=['sciencelogic', 'splunk'], selectors=selectors)
+    companies = lviewer.retrieve_company(universal_names=['1010data', 'apple'], selectors=selectors)
     company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
