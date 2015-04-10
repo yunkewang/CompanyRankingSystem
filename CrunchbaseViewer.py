@@ -12,7 +12,7 @@ class Crunchbaseviewer (object):
 
     def authenticate(self):
 
-        # Authenticate with LinkedIn app credential
+        # Authenticate with CrunchBase API credential
         cred_mode = raw_input('Use local credential conf or AES encrypted pickle? (c/p) ')
         if cred_mode == 'c':
             cred_filename = raw_input('Please input local credential conf filename: ')
@@ -24,7 +24,7 @@ class Crunchbaseviewer (object):
                 self.authenticate = cred_list[0]
                 self.application = pycrunchbase.CrunchBase(self.authenticate)
             except:
-                print "Failed to authenticate with LinkedIn"
+                print "Failed to authenticate with CrunchBase"
                 sys.exit()
         else:
             print "Credential mode invalid"
@@ -35,7 +35,7 @@ class Crunchbaseviewer (object):
 
     def authenticate_local_conf(self, cred_filename=None):
 
-        # Authenticate with LinkedIn local credential .conf file
+        # Authenticate with CrunchBase local credential .conf file
         cred_list = None
         if cred_filename is not None:
             print cred_filename
@@ -50,7 +50,7 @@ class Crunchbaseviewer (object):
                 try:
                     cred_temp = line.split('=')[1]
                 except:
-                    print "Bad credentials for LinkedIn api authentication"
+                    print "Bad credentials for CrunchBase api authentication"
                 
                 if cred_list is None:
                     cred_list = []
@@ -60,7 +60,7 @@ class Crunchbaseviewer (object):
             self.authentication = cred_list[0]
             self.application = pycrunchbase.CrunchBase(self.authenticate)
         except:
-            print "Failed to authenticate with LinkedIn"
+            print "Failed to authenticate with CrunchBase"
             sys.exit()
 
         return None
@@ -88,6 +88,6 @@ class Crunchbaseviewer (object):
 
 
 if __name__ == "__main__":
-    cviewer = Crunchbaseviewer()
-    cviewer.authenticate()
+    cbviewer = Crunchbaseviewer()
+    cbviewer.authenticate()
     
