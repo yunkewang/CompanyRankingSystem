@@ -76,4 +76,3 @@ if __name__ == "__main__":
         mh.query_output_json_csv()
     else:
         print "Invalid mode selection"
-        return
