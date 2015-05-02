@@ -46,6 +46,7 @@ class MongoHandler(object):
         query = raw_input('Input Mongodb query (what you insert within collection.find()): ')
         query_dict = ast.literal_eval(query)
         cursor = collection.find(query_dict)
+        print "Found %s rows in total" % cursor.count()
         
         try:
             f_json = open(json_filename, 'wb')
@@ -62,7 +63,10 @@ class MongoHandler(object):
             writer_csv = csv.writer(f_csv)
             writer_csv.writerow(data_json[0].keys())
             for row in data_json:
-                writer_csv.writerow(row.values())
+                try:
+                    writer_csv.writerow(row.values())
+                except:
+                    pass
         except:
             print "Saving csv file failed"
 
