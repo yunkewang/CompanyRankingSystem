@@ -5,9 +5,10 @@ import CredHandler
 class Linkedinviewer (object):
 
 
-    def __init__ (self):
+    def __init__ (self, cred_list=None):
         self.authentication = None
         self.application = None
+        self.cred_list = cred_list
 
 
     def authenticate(self):
@@ -19,11 +20,11 @@ class Linkedinviewer (object):
             self.authenticate_local_conf(cred_filename)
         elif cred_mode == 'p':
             cred_handler = CredHandler.Credhandler()
-            cred_list = cred_handler.load()
+            self.cred_list = cred_handler.load()
             try:
-                self.authentication = linkedin.LinkedInDeveloperAuthentication(cred_list[0], cred_list[1], 
-                                                                               cred_list[2], cred_list[3], 
-                                                                               cred_list[4], linkedin.PERMISSIONS.enums.values())
+                self.authentication = linkedin.LinkedInDeveloperAuthentication(self.cred_list[0], self.cred_list[1], 
+                                                                               self.cred_list[2], self.cred_list[3], 
+                                                                               self.cred_list[4], linkedin.PERMISSIONS.enums.values())
                 self.application = linkedin.LinkedInApplication(self.authentication)
             except:
                 print "Failed to authenticate with LinkedIn"
@@ -54,13 +55,13 @@ class Linkedinviewer (object):
                 except:
                     print "Bad credentials for LinkedIn api authentication"
                 
-                if cred_list is None:
-                    cred_list = []
-                cred_list.append(cred_temp.strip(' \t\n\r'))
+                if self.cred_list is None:
+                    self.cred_list = []
+                self.cred_list.append(cred_temp.strip(' \t\n\r'))
 
         try:
-            self.authentication = linkedin.LinkedInDeveloperAuthentication(cred_list[0], cred_list[1], cred_list[2],
-                                                        cred_list[3], cred_list[4], linkedin.PERMISSIONS.enums.values())
+            self.authentication = linkedin.LinkedInDeveloperAuthentication(self.cred_list[0], self.cred_list[1], self.cred_list[2],
+                                                        self.cred_list[3], self.cred_list[4], linkedin.PERMISSIONS.enums.values())
             self.application = application = linkedin.LinkedInApplication(self.authentication)
         except:
             print "Failed to authenticate with LinkedIn"
@@ -118,10 +119,13 @@ class Linkedinviewer (object):
         if count > 0:
             companies['_total'] = count
         
-        for company in companies['values']:
-            print '========================\n'
-            print company
-            print '\n========================'
+            for company in companies['values']:
+                print '========================\n'
+                print company
+                print '\n========================'
+        else:
+            print "No company retrieved"
+            return None
 
         return companies
 
@@ -150,6 +154,7 @@ class Linkedinviewer (object):
                         print '\n========================'
             except:
                 print 'Unable to retrieve company updates'
+                return None
 
         return company_updates_dict
 
@@ -161,10 +166,11 @@ if __name__ == "__main__":
                         ]
     company_selectors = ['id', 'name', 'company-type', 'stock-exchange', 
                          'ticker', 'industries', 'employee-count-range',
-                         'locations', 'founded-year', 'num-followers'
+                         'locations', 'founded-year', 'num-followers',
+                         'description'
                         ]
     lviewer = Linkedinviewer()
     lviewer.authenticate()
     # lviewer.retrieve_profile(selectors=profile_selectors)
-    companies = lviewer.retrieve_company(universal_names=['1010data', 'apple'], selectors=company_selectors)
+    companies = lviewer.retrieve_company(universal_names=['1010data'], selectors=company_selectors)
     company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
