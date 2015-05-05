@@ -20,7 +20,7 @@ pycrunchbase:
 
 #### API credential management:
 
-careerViz provides two ways of credential management, with local .conf file or shared .p file
+CompanyRankingSystem provides two ways of credential management, with local .conf file or shared .p file
 
 .conf file can be edited and loaded in plaintext with api authentication credential
 
