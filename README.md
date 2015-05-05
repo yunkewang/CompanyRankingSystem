@@ -1,4 +1,4 @@
-# careerViz
+# CompanyRankingSystem
 
 Analyzing and visualizing career data to predict company performance with data magic
 
