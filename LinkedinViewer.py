@@ -63,8 +63,8 @@ class Linkedinviewer (object):
             self.authentication = linkedin.LinkedInDeveloperAuthentication(self.cred_list[0], self.cred_list[1], self.cred_list[2],
                                                         self.cred_list[3], self.cred_list[4], linkedin.PERMISSIONS.enums.values())
             self.application = application = linkedin.LinkedInApplication(self.authentication)
-        except:
-            print "Failed to authenticate with LinkedIn"
+        except (Exception), ex:
+            print "Failed to authenticate with LinkedIn: %s" % ex.message
             sys.exit()
 
         return None
@@ -113,16 +113,15 @@ class Linkedinviewer (object):
                         companies['values'] = []
                     companies['values'].append(company_temp['values'][0])
                     count = count + 1
-                except:
-                    print "Unable to retrieve universal name:", universal_name
+                except (Exception), ex:
+                    print "Unable to retrieve universal name: %s, error: %s" % (universal_name, ex.message)
 
         if count > 0:
             companies['_total'] = count
-        
-            for company in companies['values']:
-                print '========================\n'
-                print company
-                print '\n========================'
+            # for company in companies['values']:
+            #     print '========================\n'
+            #     print company
+            #     print '\n========================'
         else:
             print "No company retrieved"
             return None
@@ -146,14 +145,14 @@ class Linkedinviewer (object):
                     if company_updates_dict is None:
                         company_updates_dict = {}
                     company_updates_dict[company['name']] = self.application.get_company_updates(company['id'], params={'count': count})
-                for company_name, company_updates in company_updates_dict.iteritems():
-                    print '\n************************', company_name, '************************\n'
-                    for i in range(company_updates['_count']):
-                        print '========================\n'
-                        print company_updates['values'][i]
-                        print '\n========================'
-            except:
-                print 'Unable to retrieve company updates'
+                # for company_name, company_updates in company_updates_dict.iteritems():
+                #     print '\n************************', company_name, '************************\n'
+                #     for i in range(company_updates['_count']):
+                #         print '========================\n'
+                #         print company_updates['values'][i]
+                #         print '\n========================'
+            except (Exception), ex:
+                print 'Unable to retrieve company updates: %s' % ex.message
                 return None
 
         return company_updates_dict
@@ -172,5 +171,5 @@ if __name__ == "__main__":
     lviewer = Linkedinviewer()
     lviewer.authenticate()
     # lviewer.retrieve_profile(selectors=profile_selectors)
-    companies = lviewer.retrieve_company(universal_names=['1010data'], selectors=company_selectors)
-    company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
+    companies = lviewer.retrieve_company(universal_names=['splunk'], selectors=company_selectors)
+    # company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)
