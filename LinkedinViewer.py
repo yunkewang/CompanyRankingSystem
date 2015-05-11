@@ -1,5 +1,5 @@
 from linkedin import linkedin
-import sys
+import sys, re
 import CredHandler
 
 class Linkedinviewer (object):
@@ -11,27 +11,33 @@ class Linkedinviewer (object):
         self.cred_list = cred_list
 
 
-    def authenticate(self):
+    def authenticate(self, token=None):
 
-        # Authenticate with LinkedIn app credential
-        cred_mode = raw_input('Use local credential conf or AES encrypted pickle? (c/p) ')
-        if cred_mode == 'c':
-            cred_filename = raw_input('Please input local credential conf filename: ')
-            self.authenticate_local_conf(cred_filename)
-        elif cred_mode == 'p':
-            cred_handler = CredHandler.Credhandler()
-            self.cred_list = cred_handler.load()
-            try:
-                self.authentication = linkedin.LinkedInDeveloperAuthentication(self.cred_list[0], self.cred_list[1], 
-                                                                               self.cred_list[2], self.cred_list[3], 
-                                                                               self.cred_list[4], linkedin.PERMISSIONS.enums.values())
-                self.application = linkedin.LinkedInApplication(self.authentication)
-            except:
-                print "Failed to authenticate with LinkedIn"
-                sys.exit()
+        # Authenticate with LinkedIn Oauth 2 Token
+        if token is not None:
+            self.application = linkedin.LinkedInApplication(token=token)
+            return None
+        
+        # Authenticate with LinkedIn Oauth 1.0a app credential
         else:
-            print "Credential mode invalid"
-            sys.exit()
+            cred_mode = raw_input('Use local credential conf or AES encrypted pickle? (c/p) ')
+            if cred_mode == 'c':
+                cred_filename = raw_input('Please input local credential conf filename: ')
+                self.authenticate_local_conf(cred_filename)
+            elif cred_mode == 'p':
+                cred_handler = CredHandler.Credhandler()
+                self.cred_list = cred_handler.load()
+                try:
+                    self.authentication = linkedin.LinkedInDeveloperAuthentication(self.cred_list[0], self.cred_list[1], 
+                                                                                   self.cred_list[2], self.cred_list[3], 
+                                                                                   self.cred_list[4], linkedin.PERMISSIONS.enums.values())
+                    self.application = linkedin.LinkedInApplication(self.authentication)
+                except:
+                    print "Failed to authenticate with LinkedIn"
+                    sys.exit()
+            else:
+                print "Credential mode invalid"
+                sys.exit()
 
         return None
 
@@ -101,8 +107,10 @@ class Linkedinviewer (object):
                         companies['values'] = []
                     companies['values'].append(company_temp['values'][0])
                     count = count + 1
-                except:
-                    print "Unable to retrieve company id:", company_id
+                except (Exception), ex:
+                    print "Unable to retrieve company id: %s, error: %s" % (company_id, ex.message)
+                    if len(re.findall('Throttle limit', ex.message)) > 0:
+                        sys.exit()
 
         if universal_names is not None:
             for universal_name in universal_names:
@@ -115,6 +123,8 @@ class Linkedinviewer (object):
                     count = count + 1
                 except (Exception), ex:
                     print "Unable to retrieve universal name: %s, error: %s" % (universal_name, ex.message)
+                    if len(re.findall('Throttle limit', ex.message)) > 0:
+                        sys.exit()
 
         if count > 0:
             companies['_total'] = count
@@ -153,6 +163,8 @@ class Linkedinviewer (object):
                 #         print '\n========================'
             except (Exception), ex:
                 print 'Unable to retrieve company updates: %s' % ex.message
+                if re.findall('Throttle limit', ex.message) is not None:
+                    sys.exit()
                 return None
 
         return company_updates_dict
@@ -171,5 +183,5 @@ if __name__ == "__main__":
     lviewer = Linkedinviewer()
     lviewer.authenticate()
     # lviewer.retrieve_profile(selectors=profile_selectors)
-    companies = lviewer.retrieve_company(universal_names=['splunk'], selectors=company_selectors)
+    companies = lviewer.retrieve_company(universal_names=['splunk', 'apple'], selectors=company_selectors)
     # company_updates_dict = lviewer.retrieve_company_updates(companies=companies, count=3)

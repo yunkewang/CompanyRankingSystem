@@ -1,5 +1,5 @@
-import pycrunchbase
-import sys
+from crunchbase import CrunchBase
+import sys, re
 import CredHandler
 
 class Crunchbaseviewer (object):
@@ -10,25 +10,34 @@ class Crunchbaseviewer (object):
         self.application = None
 
 
-    def authenticate(self):
+    def authenticate(self, token=None):
+
+        # Authenticate with passed-in token
+        if token is not None:
+            try:
+                self.application = CrunchBase(token)
+            except (Exception), ex:
+                print "Failed to authenticate with CrunchBase: %s" % ex.message
+                sys.exit()
 
         # Authenticate with CrunchBase API credential
-        cred_mode = raw_input('Use local credential conf or AES encrypted pickle? (c/p) ')
-        if cred_mode == 'c':
-            cred_filename = raw_input('Please input local credential conf filename: ')
-            self.authenticate_local_conf(cred_filename)
-        elif cred_mode == 'p':
-            cred_handler = CredHandler.Credhandler()
-            cred_list = cred_handler.load()
-            try:
-                self.authenticate = cred_list[0]
-                self.application = pycrunchbase.CrunchBase(self.authenticate)
-            except:
-                print "Failed to authenticate with CrunchBase"
-                sys.exit()
         else:
-            print "Credential mode invalid"
-            sys.exit()
+            cred_mode = raw_input('Use local credential conf or AES encrypted pickle? (c/p) ')
+            if cred_mode == 'c':
+                cred_filename = raw_input('Please input local credential conf filename: ')
+                self.authenticate_local_conf(cred_filename)
+            elif cred_mode == 'p':
+                cred_handler = CredHandler.Credhandler()
+                cred_list = cred_handler.load()
+                try:
+                    self.authentication = cred_list[0]
+                    self.application = CrunchBase(self.authentication)
+                except (Exception), ex:
+                    print "Failed to authenticate with CrunchBase: %s" % ex.message
+                    sys.exit()
+            else:
+                print "Credential mode invalid"
+                sys.exit()
 
         return None
 
@@ -57,10 +66,11 @@ class Crunchbaseviewer (object):
                 cred_list.append(cred_temp.strip(' \t\n\r'))
 
         try:
+            print cred_list[0]
             self.authentication = cred_list[0]
-            self.application = pycrunchbase.CrunchBase(self.authenticate)
-        except:
-            print "Failed to authenticate with CrunchBase"
+            self.application = CrunchBase(self.authentication)
+        except (Exception), ex:
+            print "Failed to authenticate with CrunchBase: %s" % ex.message
             sys.exit()
 
         return None
@@ -73,11 +83,20 @@ class Crunchbaseviewer (object):
         return None
 
 
-    def retrieve_company(self, company_ids=None, universal_names=None, selectors=None):
+    def retrieve_company(self, company_name=None, selectors=None):
 
         # Get company information
 
-        return None
+        if company_name is not None:
+            try:
+                company = self.application.getOrganization(company_name)
+            except (Exception), ex:
+                print "Failed to retrieve company: %s, error: %s" % (company_name, ex.message)
+                if len(re.findall('limit', ex.message)) > 0:
+                    sys.exit()
+                return None
+
+        return company
 
 
     def retrieve_company_updates(self, companies=None, count=1):
@@ -90,4 +109,5 @@ class Crunchbaseviewer (object):
 if __name__ == "__main__":
     cbviewer = Crunchbaseviewer()
     cbviewer.authenticate()
+    cbviewer.retrieve_company(company_name='Wetpaint')
     
