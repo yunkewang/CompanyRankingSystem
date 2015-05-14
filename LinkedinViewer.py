@@ -32,8 +32,8 @@ class Linkedinviewer (object):
                                                                                    self.cred_list[2], self.cred_list[3], 
                                                                                    self.cred_list[4], linkedin.PERMISSIONS.enums.values())
                     self.application = linkedin.LinkedInApplication(self.authentication)
-                except:
-                    print "Failed to authenticate with LinkedIn"
+                except (Exception), ex:
+                    print "Failed to authenticate with LinkedIn: %s" % ex.message
                     sys.exit()
             else:
                 print "Credential mode invalid"
@@ -51,15 +51,15 @@ class Linkedinviewer (object):
             try:
                 with open(cred_filename, 'r') as f:
                     cred_data = f.readlines()
-            except:
-                print "Unable to load credential conf file"
+            except (Exception), ex:
+                print "Unable to load credential conf file: %s" % ex.message
                 sys.exit()
             
             for line in cred_data:
                 try:
                     cred_temp = line.split('=')[1]
-                except:
-                    print "Bad credentials for LinkedIn api authentication"
+                except (Exception), ex:
+                    print "Bad credentials for LinkedIn api authentication: %s" % ex.message
                 
                 if self.cred_list is None:
                     self.cred_list = []

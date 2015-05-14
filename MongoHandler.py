@@ -21,8 +21,8 @@ class MongoHandler(object):
                 with open(csv_filename) as f:
                     records = csv.DictReader(f)
                     db[collection_name].insert(records)
-            except:
-                print "Failed to import from csv %s" % csv_filename
+            except (Exception), ex:
+                print "Failed to import from csv \'%s\': %s" % (csv_filename, ex.message)
 
         return None
 
@@ -39,8 +39,8 @@ class MongoHandler(object):
             db = self.mongo_client[db_name]
             try:
                 collection = db[collection_name]
-            except:
-                print "Failed to switch to collection %s" % collection_name
+            except (Exception), ex:
+                print "Failed to switch to collection \'%s\': %s" % (collection_name, ex.message)
 
         query = raw_input('Input Mongodb query (what you insert within collection.find()): ')
         query_dict = ast.literal_eval(query)
@@ -51,8 +51,8 @@ class MongoHandler(object):
             f_json = open(json_filename, 'wb')
             f_json.write(dumps(cursor))
             f_json.close()
-        except:
-            print "Saving json file failed"
+        except (Exception), ex:
+            print "Saving json file failed: %s" % ex.message
         
         try:
             f_json = open(json_filename, 'r')
@@ -64,10 +64,10 @@ class MongoHandler(object):
             for row in data_json:
                 try:
                     writer_csv.writerow(row.values())
-                except:
+                except (Exception), ex:
                     pass
-        except:
-            print "Saving csv file failed"
+        except (Exception), ex:
+            print "Saving csv file failed: %s" % ex.message
 
 
     def timestamp_convert(self, timestamp=None):
@@ -110,8 +110,8 @@ class MongoHandler(object):
             db = self.mongo_client[db_name]
             try:
                 collection = db[collection_name]
-            except:
-                print "Failed to switch to collection %s" % collection_name
+            except (Exception), ex:
+                print "Failed to switch to collection \'%s\': %s" % (collection_name, ex.message)
 
         cursor = collection.find().limit(1)
         print "Found %s rows in total" % cursor.count()
@@ -120,8 +120,8 @@ class MongoHandler(object):
             f_json = open(json_filename, 'wb')
             f_json.write(dumps(cursor))
             f_json.close()
-        except:
-            print "Saving json file failed"
+        except (Exception), ex:
+            print "Saving json file failed: %s" % ex.message
 
         try:
             f_json = open(json_filename, 'r')
@@ -144,8 +144,8 @@ class MongoHandler(object):
                     writer_csv.writerow(row.values())
                 except:
                     pass
-        except:
-            print "Saving csv file failed"
+        except (Exception), ex:
+            print "Saving csv file failed: %s" % ex.message
         
 
         return None

@@ -24,15 +24,15 @@ class Credhandler(object):
                 for line in cred_data:
                     try:
                         cred_temp = line.split('=')[1]
-                    except:
-                        print "Bad credential for API authentication"
+                    except (Exception), ex:
+                        print "Bad credential for API authentication: %s" % ex.message
                 
                     if cred_list is None:
                         cred_list = []
                     cred_list.append(cred_temp.strip(' \t\n\r'))
             print "Local credential loaded"
-        except:
-            print "Unable to retrieve local credential"
+        except (Exception), ex:
+            print "Unable to retrieve local credential: %s" % ex.message
         
         try:
             print "Please provide filename and password for credential pickle generation"
@@ -46,8 +46,8 @@ class Credhandler(object):
             f.write(iv+cred_pickle_encrypted)
             f.close()
             print "Encrypted credential saved as:", pickle_filename
-        except:
-            print "Unable to save encrypted credential pickle"
+        except (Exception), ex:
+            print "Unable to save encrypted credential pickle: %s" % ex.message
 
     def load(self, cred_pickle=None):
 
@@ -64,8 +64,8 @@ class Credhandler(object):
             encryption_suite = AES.new(password, AES.MODE_CBC, iv)
             cred_pickle = unpad(encryption_suite.decrypt(cipher_text[16:]))
             cred_list = pickle.loads(cred_pickle)
-        except:
-            print "Unable to load encrypted crendential pickle"
+        except (Exception), ex:
+            print "Unable to load encrypted crendential pickle: %s" % ex.message
 
         return cred_list
 

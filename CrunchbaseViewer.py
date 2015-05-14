@@ -51,15 +51,15 @@ class Crunchbaseviewer (object):
             try:
                 with open(cred_filename, 'r') as f:
                     cred_data = f.readlines()
-            except:
-                print "Unable to load credential conf file"
+            except (Exception), ex:
+                print "Unable to load credential conf file: %s" % ex.message
                 sys.exit()
             
             for line in cred_data:
                 try:
                     cred_temp = line.split('=')[1]
-                except:
-                    print "Bad credentials for CrunchBase api authentication"
+                except (Exception), ex:
+                    print "Bad credentials for CrunchBase api authentication %s" % ex.message
                 
                 if cred_list is None:
                     cred_list = []
