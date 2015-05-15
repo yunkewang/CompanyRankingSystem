@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-import csv, json, datetime, ast
+import csv, json, datetime, ast, re
 from bson.json_util import dumps
 
 class MongoHandler(object):
@@ -143,7 +143,7 @@ class MongoHandler(object):
                 pass
             try:
                 crunchbase_profile_acquisition = crunchbase_profile_relationship['acquired_by']
-                result_dict['acquired_by_last'] = crunchbase_profile_acquisition['items'][0]['name'].replace(',', '')
+                result_dict['acquired_by_last'] = crunchbase_profile_acquisition['items'][0]['name'].encode('ascii', 'ignore').replace(',', '')
                 acquired_time = crunchbase_profile_acquisition['items'][0]['announced_on']
                 acquired_time_dict = self.timestring_parser(acquired_time)
                 result_dict['acquired_by_year'] = acquired_time_dict['year']
@@ -155,31 +155,43 @@ class MongoHandler(object):
                 crunchbase_profile_offices = crunchbase_profile_relationship['offices']
                 result_dict['offices_amount'] = crunchbase_profile_offices['paging']['total_items']
                 for i in range(min(result_dict['offices_amount'], 3)):
-                    result_dict['offices%s_city' % str(i + 1)] = crunchbase_profile_offices['items'][i]['city']
-                    result_dict['offices%s_state' % str(i + 1)] = crunchbase_profile_offices['items'][i]['state']
+                    try:
+                        result_dict['offices%s_city' % str(i + 1)] = crunchbase_profile_offices['items'][i]['city']
+                        result_dict['offices%s_state' % str(i + 1)] = crunchbase_profile_offices['items'][i]['state']
+                    except:
+                        continue
             except (Exception), ex:
                 pass
             try:
                 crunchbase_profile_fundings = crunchbase_profile_relationship['funding_rounds']
                 result_dict['funding_total_rounds'] = crunchbase_profile_fundings['paging']['total_items']
                 for i in range(min(result_dict['offices_amount'], 3)):
-                    result_dict['funding_last%s' % str(i + 1)] = crunchbase_profile_fundings['items'][i]['name'].replace(',', '')
-                    result_dict['funding_last%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_fundings['items'][i]['created_at'])['year']
+                    try:
+                        result_dict['funding_last%s' % str(i + 1)] = crunchbase_profile_fundings['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
+                        result_dict['funding_last%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_fundings['items'][i]['created_at'])['year']
+                    except:
+                        continue
             except (Exception), ex:
                 pass
             try:
                 crunchbase_profile_news = crunchbase_profile_relationship['news']
                 news_amount = crunchbase_profile_news['paging']['total_items']
                 for i in range(min(news_amount, 3)):
-                    result_dict['recent_news%s' % str(i + 1)] = crunchbase_profile_news['items'][i]['title'].replace(',', '')
-                    result_dict['recent_news%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_news['items'][i]['created_at'])['year']
+                    try:
+                        result_dict['recent_news%s' % str(i + 1)] = crunchbase_profile_news['items'][i]['title'].encode('ascii', 'ignore').replace(',', '')
+                        result_dict['recent_news%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_news['items'][i]['created_at'])['year']
+                    except:
+                        continue
             except (Exception), ex:
                 pass
             try:
                 crunchbase_profile_products = crunchbase_profile_relationship['products']
                 result_dict['products_amount'] = crunchbase_profile_products['paging']['total_items']
                 for i in range(min(result_dict['products_amount'], 3)):
-                    result_dict['product%s' % str(i + 1)] = crunchbase_profile_products['items'][i]['name'].replace(',', '')
+                    try:
+                        result_dict['product%s' % str(i + 1)] = crunchbase_profile_products['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
+                    except:
+                        continue
             except (Exception), ex:
                 pass
 
@@ -225,10 +237,11 @@ class MongoHandler(object):
                 data_temp = {}
                 for field_name in ['name', 'location_city', 'location_country_code', 
                                    'location_region', 'primary_role', 'short_description']:
-                    data_temp[field_name] = data_raw[field_name].replace(',', '')
+                    data_temp[field_name] = re.sub(r'\\', r',', data_raw[field_name].encode('ascii', 'ignore'))
                 try:
                     data_temp.update(self.c_profile_parser(data_raw['crunchbase_profile']))
                 except (Exception), ex:
+                    print "Failed to parse Crunchbase profile: %s" % ex.message
                     continue
                 # data_temp.update(self.l_profile_parser(data_raw['linkedin_profile']))
                 data_selected_json.append(data_temp)
@@ -239,8 +252,8 @@ class MongoHandler(object):
             for row in data_selected_json:
                 try:
                     writer_csv.writerow(row.values())
-                except:
-                    pass
+                except (Exception), ex:
+                    print "Failed to write row: %s" % row.values()
         except (Exception), ex:
             print "Saving csv file failed: %s" % ex.message
         
@@ -249,11 +262,7 @@ class MongoHandler(object):
 
 
 if __name__ == "__main__":
-    # null = None
-    # true = True
-    # false = False
     mh = MongoHandler()
-    # print mh.c_profile_parser(c_profile['crunchbase_profile'])
     mh_mode = raw_input('Use Mongo Handler for csv data importing or query outputing? (i/o/c) ')
     if mh_mode == 'i':
         mh.insert_csv()
