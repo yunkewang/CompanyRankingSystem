@@ -114,20 +114,20 @@ class MongoHandler(object):
         
         key_list = ['headquarter_longtitude', 'headquarter_latitude', 
                     'acquired_by_last', 'acquired_by_year', 'acquired_by_month', 'acquired_by_times', 
-                    'competitors', 'competitors_amount', 
-                    'offices1_city', 'offices1_state', 'offices2_city', 
-                    'offices2_state', 'offices3_city', 'offices3_state', 'offices_amount', 
+                    'competitor1', 'competitor2', 'competitor3', 'competitors_amount', 
+                    'offices1_city', 'offices1_region', 'offices2_city', 
+                    'offices2_region', 'offices3_city', 'offices3_region', 'offices_amount', 
                     'recent_news1', 'recent_news2', 'recent_news3', 
                     'recent_news1_year', 'recent_news2_year', 'recent_news3_year',
                     'product1', 'product2', 'product3', 'products_amount',
                     'funding_last1', 'funding_last1_year', 
                     'funding_last2', 'funding_last2_year', 
                     'funding_last3', 'funding_last3_year', 
-                    'funding_total', 'funding_total_rounds', 
-                    'investors', 'founded_year', 'founded_month', 'founded_day',
-                    'inverstments_number', 'is_closed', 'catogory_keyword1',
-                    'catogory_keyword2', 'catogory_keyword3', 'catogory_keyword4',
-                    'catogory_keyword5'
+                    'funding_total', 'funding_total_rounds', 'funding_total_amount',
+                    'investors_amount', 'investor1', 'investor2', 'investor3',
+                    'founded_year', 'founded_month', 'founded_day',
+                    'is_closed', 'category_keyword1', 'category_keyword2', 
+                    'category_keyword3', 'category_keyword4', 'category_keyword5'
                     ]
         result_dict = dict.fromkeys(key_list)
         
@@ -135,6 +135,7 @@ class MongoHandler(object):
             return result_dict
         else:
             crunchbase_profile_relationship = crunchbase_profile['data']['relationships']
+            crunchbase_profile_properties = crunchbase_profile['data']['properties']
             try:
                 crunchbase_profile_headquarter = crunchbase_profile_relationship['headquarters']['items'][0]
                 result_dict['headquarter_longtitude'] = crunchbase_profile_headquarter['longtitude']
@@ -157,8 +158,9 @@ class MongoHandler(object):
                 for i in range(min(result_dict['offices_amount'], 3)):
                     try:
                         result_dict['offices%s_city' % str(i + 1)] = crunchbase_profile_offices['items'][i]['city']
-                        result_dict['offices%s_state' % str(i + 1)] = crunchbase_profile_offices['items'][i]['state']
-                    except:
+                        result_dict['offices%s_region' % str(i + 1)] = crunchbase_profile_offices['items'][i]['region']
+                    except (Exception), ex:
+                        print ex.message
                         continue
             except (Exception), ex:
                 pass
@@ -169,7 +171,7 @@ class MongoHandler(object):
                     try:
                         result_dict['funding_last%s' % str(i + 1)] = crunchbase_profile_fundings['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
                         result_dict['funding_last%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_fundings['items'][i]['created_at'])['year']
-                    except:
+                    except (Exception), ex:
                         continue
             except (Exception), ex:
                 pass
@@ -180,7 +182,7 @@ class MongoHandler(object):
                     try:
                         result_dict['recent_news%s' % str(i + 1)] = crunchbase_profile_news['items'][i]['title'].encode('ascii', 'ignore').replace(',', '')
                         result_dict['recent_news%s_year' % str(i + 1)] = self.timestamp_convert(crunchbase_profile_news['items'][i]['created_at'])['year']
-                    except:
+                    except (Exception), ex:
                         continue
             except (Exception), ex:
                 pass
@@ -191,6 +193,48 @@ class MongoHandler(object):
                     try:
                         result_dict['product%s' % str(i + 1)] = crunchbase_profile_products['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
                     except:
+                        continue
+            except (Exception), ex:
+                pass
+            try:
+                crunchbase_profile_competitors = crunchbase_profile_relationship['competitors']
+                result_dict['competitors_amount'] = crunchbase_profile_competitors['paging']['total_items']
+                for i in range(min(result_dict['competitors_amount'], 3)):
+                    try:
+                        result_dict['competitor%s' % str(i + 1)] = crunchbase_profile_competitors['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
+                    except (Exception), ex:
+                        continue
+            except (Exception), ex:
+                pass
+            try:
+                result_dict['funding_total_amount'] = crunchbase_profile_properties['total_funding_usd']
+                result_dict['founded_year'] = crunchbase_profile_properties['founded_on_year']
+                result_dict['founded_month'] = crunchbase_profile_properties['founded_on_month']
+                result_dict['founded_day'] = crunchbase_profile_properties['founded_on_day']
+                try:
+                    investor_list = crunchbase_profile_properties.get('investors')
+                    if investor is None:
+                        pass
+                    else:
+                        result_dict['investors_amount'] = len(investor_list)
+                        for i in range(min(result_dict['investors_amount'], 3)):
+                            try:
+                                result_dict['investor%s' % str(i + 1)] = investor_list[i]['name'].encode('ascii', 'ignore').replace(',', '')
+                            except (Exception), ex:
+                                continue
+                except:
+                    pass
+                result_dict['is_closed'] = crunchbase_profile_properties['is_closed']
+            except (Exception), ex:
+                pass
+            try:
+                crunchbase_profile_categories = crunchbase_profile_relationship['categories']
+                categories_amount = crunchbase_profile_categories['paging']['total_items']
+                for i in range(min(categories_amount, 5)):
+                    try:
+                        result_dict['category_keyword%s' % str(i + 1)] = crunchbase_profile_categories['items'][i]['name'].encode('ascii', 'ignore').replace(',', '')
+                    except (Exception), ex:
+                        print ex.message
                         continue
             except (Exception), ex:
                 pass
